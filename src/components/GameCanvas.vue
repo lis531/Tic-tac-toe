@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const buttonStates = ref(Array(9).fill(''));
 let lastPlayer = 'X';
+let lastStartingPlayer = 'X';
 
 const selectedGameMode = ref(1);
 const lastButtonHovered = ref(false);
@@ -13,6 +14,10 @@ const toggleGameMode = (mode) => {
   lastPlayer = 'X';
   let message = document.getElementById('message');
   message.textContent = '';
+
+  if (mode === 1) {
+    placeRandomO();
+  }
 };
 
 const handleMouseEnter = (buttonType) => {
@@ -23,66 +28,95 @@ const handleMouseLeave = () => {
   lastButtonHovered.value = false;
 };
 
+const winningCombos = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6],
+];
+
 const checkWinner = (type) => {
-  const winningCombos = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  return winningCombos.some((combo) => {
-    return combo.every((index) => buttonStates.value[index] === type);
-  });
+  return winningCombos.some(combo => combo.every(index => buttonStates.value[index] === type));
 };
 
 const toggleButtonState = (index) => {
-  let message = document.getElementById('message');
-  if(selectedGameMode === 1) {
-    if(buttonStates.value[index] === '') {
-      buttonStates.value[index] = 'X';
-      const emptyIndexes = buttonStates.value.reduce((acc, state, index) => {
-        if(state === '') {
-          acc.push(index);
-        }
-        return acc;
-      }, []);
-      const randomIndex = emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
-      buttonStates.value[randomIndex] = 'O';
-    }
-    if(checkWinner('X')) {
-      message.textContent = 'You won!';
-      buttonStates.value = Array(9).fill('');
-    } else if(checkWinner('O')) {
-      message.textContent = 'You lost!';
-      buttonStates.value = Array(9).fill('');
-    } else if(!buttonStates.value.includes('')) {
-      message.textContent = 'It\'s a draw!';
-      buttonStates.value = Array(9).fill('');
-    }
+  if (buttonStates.value[index] !== '') return;
+
+  buttonStates.value[index] = selectedGameMode.value === 1 ? 'X' : lastPlayer;
+
+  if (selectedGameMode.value === 1) {
+    const emptyIndexes = getIndexes('');
+    let chosenIndex = getWinningMove('O') || getWinningMove('X') || emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+    buttonStates.value[chosenIndex] = 'O';
   } else {
-    if(buttonStates.value[index] === '') {
-      buttonStates.value[index] = lastPlayer;
-      lastPlayer = lastPlayer === 'X' ? 'O' : 'X';
-    }
-    if(checkWinner('X')) {
-      message.textContent = 'Player X won!';
-      buttonStates.value = Array(9).fill('');
-    } else if(checkWinner('O')) {
-      message.textContent = 'Player O won!';
-      buttonStates.value = Array(9).fill('');
-    } else if(!buttonStates.value.includes('')) {
-      message.textContent = 'It\'s a draw!';
-      buttonStates.value = Array(9).fill('');
+    lastPlayer = lastPlayer === 'X' ? 'O' : 'X';
+  }
+
+  checkGameStatus();
+};
+
+const getIndexes = (mark) => {
+  const indexes = [];
+  for (let i = 0; i < buttonStates.value.length; i++) {
+    if (buttonStates.value[i] === mark) {
+      indexes.push(i);
     }
   }
+  return indexes;
 };
+
+const getWinningMove = (player) => {
+  const playerIndexes = getIndexes(player);
+  const emptyIndexes = getIndexes('');
+  for (let j = 0; j < winningCombos.length; j++) {
+    const playerInCombo = winningCombos[j].filter(idx => playerIndexes.includes(idx));
+    const emptyInCombo = winningCombos[j].filter(idx => emptyIndexes.includes(idx));
+    if (playerInCombo.length === 2 && emptyInCombo.length === 1) {
+      return emptyInCombo[0];
+    }
+  }
+  return null;
+};
+
+const checkGameStatus = () => {
+  const message = document.getElementById('message');
+  if (checkWinner('X')) {
+    message.textContent = selectedGameMode.value === 1 ? 'You won!' : 'Player X won!';
+  } else if (checkWinner('O')) {
+    message.textContent = selectedGameMode.value === 1 ? 'You lost!' : 'Player O won!';
+  } else if (!buttonStates.value.includes('')) {
+    message.textContent = "It's a draw!";
+  } else {
+    return;
+  }
+  buttonStates.value = Array(9).fill('');
+  if(lastStartingPlayer !== 'O') {
+    placeRandomO();
+  } else {
+    lastStartingPlayer = 'X';
+  }
+};
+
+const placeRandomO = () => {
+  lastStartingPlayer = 'O';
+  const emptyIndexes = getIndexes('');
+  let chosenIndex = emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+  buttonStates.value[chosenIndex] = 'O';
+};
+
+onMounted(() => {
+  if (selectedGameMode.value === 1) {
+    placeRandomO();
+  }
+});
 </script>
 
 <template>
+  <p id="message"></p>
   <div class="buttons" :class="{ 'mode-1-selected': selectedGameMode === 1, 'mode-2-selected': selectedGameMode === 2 }">
     <button
         @click="toggleGameMode(1)"
@@ -93,7 +127,6 @@ const toggleButtonState = (index) => {
         @mouseenter="handleMouseEnter('last')"
         @mouseleave="handleMouseLeave">Two Players</button>
   </div>
-  <p id="message"></p>
   <grid :rows="3" :columns="3">
     <button
         v-for="(state, index) in buttonStates"
@@ -127,7 +160,7 @@ grid > button {
 .buttons {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 2vh;
+  margin-bottom: 1vh;
   background-color: rgba(var(--color-background-almost), 0.5);
   padding: 1rem;
   border-radius: 1rem;

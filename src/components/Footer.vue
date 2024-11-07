@@ -9,6 +9,6 @@
 <style scoped>
     p {
         font-size: 1.5rem;
-        margin: 0;
+        margin: 2vh 0 0 0;
     }
 </style>

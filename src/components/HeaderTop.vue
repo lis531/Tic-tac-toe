@@ -9,6 +9,6 @@
 <style scoped>
   h1 {
     font-size: 3rem;
-    margin: 0 0 4vh;
+    margin: 0 0 2vh 0;
   }
 </style>
