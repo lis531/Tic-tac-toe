@@ -1,12 +1,14 @@
 <script setup>
 import HeaderTop from './components/HeaderTop.vue'
 import GameCanvas from './components/GameCanvas.vue'
+import Footer from './components/Footer.vue'
 </script>
 
 <template>
   <main>
     <HeaderTop />
     <GameCanvas />
+    <Footer />
   </main>
 </template>
 

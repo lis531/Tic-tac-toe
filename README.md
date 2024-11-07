@@ -1,6 +1,6 @@
-# untitled
+# Tic-tac-toe
 
-This template should help get you started developing with Vue 3 in Vite.
+Simple tic-tac-toe game made using Vue and Vite.
 
 ## Recommended IDE Setup
 

@@ -4,11 +4,11 @@ import { ref } from 'vue';
 const buttonStates = ref(Array(9).fill(''));
 let lastPlayer = 'X';
 
-const selectedGameMode = ref(1); // Default to game mode 1
+const selectedGameMode = ref(1);
 const lastButtonHovered = ref(false);
 
 const toggleGameMode = (mode) => {
-  selectedGameMode.value = mode; // Set the selected game mode
+  selectedGameMode.value = mode;
   buttonStates.value = Array(9).fill('');
   lastPlayer = 'X';
   let message = document.getElementById('message');
@@ -38,11 +38,10 @@ const checkWinner = (type) => {
     return combo.every((index) => buttonStates.value[index] === type);
   });
 };
-let gameMode = 1;
 
 const toggleButtonState = (index) => {
   let message = document.getElementById('message');
-  if(gameMode === 1) {
+  if(selectedGameMode === 1) {
     if(buttonStates.value[index] === '') {
       buttonStates.value[index] = 'X';
       const emptyIndexes = buttonStates.value.reduce((acc, state, index) => {
@@ -84,7 +83,7 @@ const toggleButtonState = (index) => {
 </script>
 
 <template>
-  <div class="buttons" :class="{ 'hovered-last': lastButtonHovered, 'mode-1-selected': selectedGameMode === 1, 'mode-2-selected': selectedGameMode === 2 }">
+  <div class="buttons" :class="{ 'mode-1-selected': selectedGameMode === 1, 'mode-2-selected': selectedGameMode === 2 }">
     <button
         @click="toggleGameMode(1)"
         @mouseenter="handleMouseEnter('first')"
