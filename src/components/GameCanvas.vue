@@ -1,23 +1,18 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 
 const buttonStates = ref(Array(9).fill(''));
 let lastPlayer = 'X';
 let lastStartingPlayer = 'X';
+let isAllowed = true;
 
 const selectedGameMode = ref(1);
 const lastButtonHovered = ref(false);
 
 const toggleGameMode = (mode) => {
   selectedGameMode.value = mode;
-  buttonStates.value = Array(9).fill('');
   lastPlayer = 'X';
-  let message = document.getElementById('message');
-  message.textContent = '';
-
-  if (mode === 1) {
-    placeRandomO();
-  }
+  reset();
 };
 
 const handleMouseEnter = (buttonType) => {
@@ -44,19 +39,40 @@ const checkWinner = (type) => {
 };
 
 const toggleButtonState = (index) => {
+  if (!isAllowed) return;
   if (buttonStates.value[index] !== '') return;
+
+  const p = document.querySelectorAll('.buttonGrid p');
+  p[index].style.transform = 'scale(0.75)';
+  setTimeout(() => {
+    p[index].style.transform = 'scale(1)';
+  }, 200);
 
   buttonStates.value[index] = selectedGameMode.value === 1 ? 'X' : lastPlayer;
 
+  if (checkWinner('X')) {
+    checkGameStatus();
+    return;
+  }
+    console.log("this shit");
+
   if (selectedGameMode.value === 1) {
     const emptyIndexes = getIndexes('');
-    let chosenIndex = getWinningMove('O') || getWinningMove('X') || emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
-    buttonStates.value[chosenIndex] = 'O';
+    isAllowed = false;
+    setTimeout(() => {
+      let chosenIndex = getWinningMove('O') || getWinningMove('X') || emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+      p[chosenIndex].style.transform = 'scale(0.75)';
+      setTimeout(() => {
+        p[chosenIndex].style.transform = 'scale(1)';
+      }, 200);
+      isAllowed = true;
+      buttonStates.value[chosenIndex] = 'O';
+      checkGameStatus();
+    }, 200);
   } else {
     lastPlayer = lastPlayer === 'X' ? 'O' : 'X';
+    checkGameStatus();
   }
-
-  checkGameStatus();
 };
 
 const getIndexes = (mark) => {
@@ -84,20 +100,17 @@ const getWinningMove = (player) => {
 
 const checkGameStatus = () => {
   const message = document.getElementById('message');
+  const getRestartButton = document.querySelector('.reset-button');
+  if (checkWinner('X') || checkWinner('O') || !buttonStates.value.includes('')) {
+    getRestartButton.style.display = 'block';
+    isAllowed = false;
+  }
   if (checkWinner('X')) {
     message.textContent = selectedGameMode.value === 1 ? 'You won!' : 'Player X won!';
   } else if (checkWinner('O')) {
     message.textContent = selectedGameMode.value === 1 ? 'You lost!' : 'Player O won!';
   } else if (!buttonStates.value.includes('')) {
     message.textContent = "It's a draw!";
-  } else {
-    return;
-  }
-  buttonStates.value = Array(9).fill('');
-  if(lastStartingPlayer !== 'O') {
-    placeRandomO();
-  } else {
-    lastStartingPlayer = 'X';
   }
 };
 
@@ -105,14 +118,28 @@ const placeRandomO = () => {
   lastStartingPlayer = 'O';
   const emptyIndexes = getIndexes('');
   let chosenIndex = emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+  const p = document.querySelectorAll('.buttonGrid p');
   buttonStates.value[chosenIndex] = 'O';
+  p[chosenIndex].style.transform = 'scale(0.75)';
+  setTimeout(() => {
+    p[chosenIndex].style.transform = 'scale(1)';
+  }, 200);
 };
 
-onMounted(() => {
-  if (selectedGameMode.value === 1) {
+const reset = () => {
+  isAllowed = true;
+  buttonStates.value = Array(9).fill('');
+  const message = document.getElementById('message');
+  message.textContent = '';
+  const getRestartButton = document.querySelector('.reset-button');
+  getRestartButton.style.display = 'none';
+
+  if (selectedGameMode.value === 1 && lastStartingPlayer === 'X') {
     placeRandomO();
+  } else {
+    lastStartingPlayer = 'X';
   }
-});
+};
 </script>
 
 <template>
@@ -129,10 +156,14 @@ onMounted(() => {
   </div>
   <grid :rows="3" :columns="3">
     <button
+        class="buttonGrid"
         v-for="(state, index) in buttonStates"
         :key="index"
         @click="toggleButtonState(index)">
-      {{ state }}
+      <p>{{ state }}</p>
+    </button>
+    <button class="reset-button" @click="reset()">
+      Reset
     </button>
   </grid>
 </template>
@@ -143,25 +174,28 @@ grid {
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
 }
-grid > button {
+.buttonGrid {
   font-size: 5rem;
   padding: 1rem;
   width: 10rem;
   height: 10rem;
   border: 0;
   border-radius: 0.5rem;
-  background-color: var(--color-background-soft);
-  color: var(--color-text);
+  background-color: rgb(var(--color-background-soft));
+  color: rgb(var(--color-text));
   cursor: pointer;
   transition: ease-in-out 0.2s;
   user-select: none;
   box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
 }
+.buttonGrid > p {
+  margin: 0;
+  transition: ease-in-out 0.2s;
+}
 .buttons {
   display: flex;
   justify-content: space-between;
   margin-bottom: 1vh;
-  background-color: rgba(var(--color-background-almost), 0.5);
   padding: 1rem;
   border-radius: 1rem;
   position: relative;
@@ -174,13 +208,13 @@ grid > button {
   border-radius: 0.5rem;
   cursor: pointer;
   user-select: none;
-  color: var(--color-text);
+  color: rgb(var(--color-text));
   background: none;
 }
 .buttons::after {
   content: '';
   position: absolute;
-  background-color: var(--color-background-soft);
+  background-color: rgb(var(--color-background-soft));
   backdrop-filter: blur(0.5rem);
   height: calc(100% - 2rem);
   width: 12rem;
@@ -189,6 +223,20 @@ grid > button {
   transition: transform 0.4s ease-in-out;
   left: 1rem;
   transform: translateX(-100%);
+}
+.reset-button {
+  display: none;
+  position: absolute;
+  align-self: center;
+  justify-self: center;
+  backdrop-filter: blur(3px);
+  border-radius: 1rem;
+  font-size: 2rem;
+  padding: 1rem 2rem;
+  background-color: rgba(var(--color-background-almost), 0.9);
+  border: 1px solid rgb(var(--color-background));
+  cursor: pointer;
+  color: rgb(var(--color-text));
 }
 .mode-1-selected::after {
   transform: translateX(0);
