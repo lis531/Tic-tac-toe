@@ -38,6 +38,13 @@ const checkWinner = (type) => {
   return winningCombos.some(combo => combo.every(index => buttonStates.value[index] === type));
 };
 
+const highlightWinningCombo = (combo) => {
+  const p = document.querySelectorAll('.buttonGrid p');
+  combo.forEach(index => {
+    p[index].style.color = 'green';
+  });
+};
+
 const toggleButtonState = (index) => {
   if (!isAllowed) return;
   if (buttonStates.value[index] !== '') return;
@@ -54,10 +61,13 @@ const toggleButtonState = (index) => {
     checkGameStatus();
     return;
   }
-    console.log("this shit");
 
   if (selectedGameMode.value === 1) {
     const emptyIndexes = getIndexes('');
+    if (emptyIndexes.length === 0) {
+      checkGameStatus();
+      return;
+    }
     isAllowed = false;
     setTimeout(() => {
       let chosenIndex = getWinningMove('O') || getWinningMove('X') || emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
@@ -112,6 +122,7 @@ const checkGameStatus = () => {
   } else if (!buttonStates.value.includes('')) {
     message.textContent = "It's a draw!";
   }
+  highlightWinningCombo(winningCombos.find(combo => combo.every(index => buttonStates.value[index] === 'X') || combo.every(index => buttonStates.value[index] === 'O')));
 };
 
 const placeRandomO = () => {
@@ -139,6 +150,10 @@ const reset = () => {
   } else {
     lastStartingPlayer = 'X';
   }
+  const p = document.querySelectorAll('.buttonGrid p');
+  p.forEach(p => {
+    p.style.color = 'rgb(var(--color-text))';
+  });
 };
 </script>
 
