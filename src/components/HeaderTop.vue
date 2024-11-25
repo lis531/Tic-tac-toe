@@ -9,6 +9,9 @@
 <style scoped>
   h1 {
     font-size: 3rem;
-    margin: 0 0 2vh 0;
+    @media (max-width: 1024px) {
+      margin-top: 8vh;
+      font-size: 2.4rem;
+    }
   }
 </style>

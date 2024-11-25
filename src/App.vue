@@ -17,7 +17,6 @@ main {
   display: flex;
   flex-direction: column;
   place-items: center;
-  padding: 2rem;
   gap: 1rem;
 }
 

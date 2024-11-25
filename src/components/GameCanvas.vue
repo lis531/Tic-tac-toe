@@ -117,10 +117,13 @@ const checkGameStatus = () => {
   }
   if (checkWinner('X')) {
     message.textContent = selectedGameMode.value === 1 ? 'You won!' : 'Player X won!';
+    message.style.color = 'green';
   } else if (checkWinner('O')) {
     message.textContent = selectedGameMode.value === 1 ? 'You lost!' : 'Player O won!';
+    message.style.color = 'red';
   } else if (!buttonStates.value.includes('')) {
     message.textContent = "It's a draw!";
+    message.style.color = 'rgb(var(--color-text))';
   }
   highlightWinningCombo(winningCombos.find(combo => combo.every(index => buttonStates.value[index] === 'X') || combo.every(index => buttonStates.value[index] === 'O')));
 };
@@ -139,6 +142,7 @@ const placeRandomO = () => {
 
 const reset = () => {
   isAllowed = true;
+  lastPlayer = 'X';
   buttonStates.value = Array(9).fill('');
   const message = document.getElementById('message');
   message.textContent = '';
@@ -188,6 +192,9 @@ grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
+  @media (max-width: 1024px) {
+    gap: 1rem;
+  }
 }
 .buttonGrid {
   font-size: 5rem;
@@ -202,10 +209,16 @@ grid {
   transition: ease-in-out 0.2s;
   user-select: none;
   box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
-}
-.buttonGrid > p {
-  margin: 0;
-  transition: ease-in-out 0.2s;
+  line-height: 0;
+  @media (max-width: 1024px) {
+    font-size: 3rem;
+    width: 6rem;
+    height: 6rem;
+  }
+  & > p {
+    margin: 0;
+    transition: ease-in-out 0.2s;
+  }
 }
 .buttons {
   display: flex;
@@ -214,30 +227,38 @@ grid {
   padding: 1rem;
   border-radius: 1rem;
   position: relative;
+  & > button {
+    font-size: 1.5rem;
+    padding: 0.5rem 0;
+    border: 0;
+    width: 12rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+    color: rgb(var(--color-text));
+    background: none;
+    @media (max-width: 1024px) {
+      font-size: 1.2rem;
+      width: 10rem;
+    }
+  }
+  &::after {
+    content: '';
+    position: absolute;
+    background-color: rgb(var(--color-background-soft));
+    height: calc(100% - 2rem);
+    width: 12rem;
+    border-radius: 1rem;
+    z-index: -1;
+    transition: transform 0.4s ease-in-out;
+    left: 1rem;
+    transform: translateX(-100%);
+  }
 }
-.buttons > button {
-  font-size: 1.5rem;
-  padding: 0.5rem 1rem;
-  border: 0;
-  width: 12rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  user-select: none;
-  color: rgb(var(--color-text));
-  background: none;
-}
-.buttons::after {
-  content: '';
-  position: absolute;
-  background-color: rgb(var(--color-background-soft));
-  backdrop-filter: blur(0.5rem);
-  height: calc(100% - 2rem);
-  width: 12rem;
-  border-radius: 1rem;
-  z-index: -1;
-  transition: transform 0.4s ease-in-out;
-  left: 1rem;
-  transform: translateX(-100%);
+@media (max-width: 1024px) {
+  .buttons::after {
+    width: 10rem;
+  }
 }
 .reset-button {
   display: none;
@@ -263,5 +284,9 @@ grid {
 #message {
   font-size: 1.5rem;
   margin-bottom: 2vh;
+  height: 2rem;
+  @media (max-width: 1024px) {
+    font-size: 1.2rem;
+  }
 }
 </style>
