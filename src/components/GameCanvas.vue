@@ -38,13 +38,6 @@ const checkWinner = (type) => {
   return winningCombos.some(combo => combo.every(index => buttonStates.value[index] === type));
 };
 
-const highlightWinningCombo = (combo) => {
-  const p = document.querySelectorAll('.buttonGrid p');
-  combo.forEach(index => {
-    p[index].style.color = 'green';
-  });
-};
-
 const toggleButtonState = (index) => {
   if (!isAllowed) return;
   if (buttonStates.value[index] !== '') return;
@@ -125,7 +118,13 @@ const checkGameStatus = () => {
     message.textContent = "It's a draw!";
     message.style.color = 'rgb(var(--color-text))';
   }
-  highlightWinningCombo(winningCombos.find(combo => combo.every(index => buttonStates.value[index] === 'X') || combo.every(index => buttonStates.value[index] === 'O')));
+  const p = document.querySelectorAll('.buttonGrid p');
+  const winningCombo = winningCombos.find(combo => combo.every(index => buttonStates.value[index] === 'X') || combo.every(index => buttonStates.value[index] === 'O'));
+  if (winningCombo) {
+    winningCombo.forEach(index => {
+      p[index].style.color = message.style.color;
+    });
+  }
 };
 
 const placeRandomO = () => {
@@ -167,21 +166,24 @@ const reset = () => {
     <button
         @click="toggleGameMode(1)"
         @mouseenter="handleMouseEnter('first')"
-        @mouseleave="handleMouseLeave">Single Player</button>
+        @mouseleave="handleMouseLeave"
+        aria-label="Single Player">Single Player</button>
     <button
         @click="toggleGameMode(2)"
         @mouseenter="handleMouseEnter('last')"
-        @mouseleave="handleMouseLeave">Two Players</button>
+        @mouseleave="handleMouseLeave"
+        aria-label="Two Players">Two Players</button>
   </div>
   <grid :rows="3" :columns="3">
     <button
         class="buttonGrid"
         v-for="(state, index) in buttonStates"
         :key="index"
-        @click="toggleButtonState(index)">
+        @click="toggleButtonState(index)"
+        :aria-label="'Button ' + (index + 1)">
       <p>{{ state }}</p>
     </button>
-    <button class="reset-button" @click="reset()">
+    <button class="reset-button" @click="reset()" aria-label="Reset">
       Reset
     </button>
   </grid>
