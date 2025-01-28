@@ -1,5 +1,5 @@
 {
-  "name": "untitled",
+  "name": "tic-tac-toe",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,6 +13,6 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",
-    "vite": "^5.4.10"
+    "vite": "^6.3.5"
   }
 }
